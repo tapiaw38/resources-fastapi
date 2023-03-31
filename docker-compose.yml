@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: app
+    build: .
+    command: bash -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    restart: always
+  celery:
+    container_name: celery
+    image: celery:alpine
+    build: .
+    command: celery -A app.worker worker --loglevel=INFO
+    volumes:
+      - .:/app
+  flower:
+    container_name: flower
+    image: mher/flower
+    ports:
+      - 5555:5555
