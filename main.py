@@ -17,6 +17,8 @@ PORT = os.getenv("PORT")
 DATABASE_TYPE = os.getenv("DATABASE_TYPE")
 DATABASE_URL = os.getenv("DATABASE_URL")
 JWT_SECRET = os.getenv("JWT_SECRET")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 config = Config(
     host=HOST,
@@ -24,6 +26,8 @@ config = Config(
     database_type=DATABASE_TYPE,
     database_url=DATABASE_URL,
     jwt_secret=JWT_SECRET,
+    celery_broker_url=CELERY_BROKER_URL,
+    celery_result_backend=CELERY_RESULT_BACKEND,
 )
 broker = Broker(config=config)
-broker.start(app, binder_router)
+broker.start(binder_router, app)

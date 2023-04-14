@@ -1,17 +1,17 @@
 from fastapi import APIRouter
 from fastapi import Body, Path, Query
+from fastapi.encoders import jsonable_encoder
 
-from typing import Optional, List
 from starlette.responses import JSONResponse
 from starlette.exceptions import HTTPException
 from starlette.status import (
     HTTP_200_OK, HTTP_201_CREATED,
     HTTP_404_NOT_FOUND
 )
-from fastapi.encoders import jsonable_encoder
+from typing import Optional, List
 from models.employee import Employee
-
 from repository.repository import Repository
+
 
 repository = Repository()
 

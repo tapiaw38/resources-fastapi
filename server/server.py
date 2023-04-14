@@ -1,11 +1,12 @@
+from fastapi import FastAPI
 from abc import ABC, abstractmethod
 from database.database import DatabaseFactory
 from repository.repository import set_repository
+from celery_worker import CeleryWorker
 
 
 class Config:
     """Base class for configuration."""
-
     def __init__(
         self,
         host: str,
@@ -13,12 +14,16 @@ class Config:
         database_type: str,
         database_url: str,
         jwt_secret: str,
+        celery_broker_url: str,
+        celery_result_backend: str,
     ):
         self.host = host
         self.port = port
         self.database_type = database_type
         self.database_url = database_url
         self.jwt_secret = jwt_secret
+        self.celery_broker_url = celery_broker_url
+        self.celery_result_backend = celery_result_backend
 
 
 class Server(ABC):
@@ -26,6 +31,10 @@ class Server(ABC):
 
     @abstractmethod
     def get_config(self):
+        pass
+
+    @abstractmethod
+    def celery_worker(self):
         pass
 
     @abstractmethod
@@ -43,7 +52,15 @@ class Broker(Server):
         """Get the configuration."""
         return self.config
 
-    def start(self, fast_app, binder_router):
+    @property
+    def celery_worker(self):
+        """Create celery worker."""
+        return CeleryWorker(
+            broker_url=self.get_config().celery_broker_url,
+            result_backend=self.get_config().celery_result_backend,
+        )
+
+    def start(self, binder_router, app: FastAPI):
         """Start the broker."""
 
         if self.get_config().database_url is None:
@@ -59,7 +76,7 @@ class Broker(Server):
 
         set_repository(db)
 
-        fast_app.include_router(
-            binder_router(self.get_config()),
+        app.include_router(
+            binder_router(broker=self),
             prefix="/api/v1",
         )

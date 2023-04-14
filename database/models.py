@@ -13,7 +13,7 @@ class EmployeeType(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(150), unique=True, index=True, nullable=False)
-    description = Column(String(150))
+    description = Column(String(150), nullable=True)
     created_at = Column(TIMESTAMP, server_default='now()')
     updated_at = Column(TIMESTAMP, server_default='now()')
 
@@ -24,7 +24,7 @@ class Workplace(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(150), nullable=False)
     code = Column(String(150), unique=True, nullable=False)
-    address = Column(String(150))
+    address = Column(String(150), nullable=True)
     created_at = Column(TIMESTAMP, server_default='now()')
     updated_at = Column(TIMESTAMP, server_default='now()')
 
@@ -37,9 +37,9 @@ class Employee(Base):
     agent_number = Column(String(150), unique=True)
     first_name = Column(String(150), nullable=False)
     last_name = Column(String(150), server_default='')
-    document_number = Column(String(150), unique=True)
-    birth_date = Column(Date)
-    date_admission = Column(Date)
+    document_number = Column(String(150), unique=True, nullable=True)
+    birth_date = Column(Date, nullable=True)
+    date_admission = Column(Date, nullable=True)
     phone = Column(String(150), server_default='')
     address = Column(String(150), server_default='')
     picture = Column(String(256), server_default='')
@@ -49,9 +49,14 @@ class Employee(Base):
     work_number = Column(String(150), server_default='')
     employee_type = Column(
         Integer,
-        ForeignKey('employee_type.id', ondelete='CASCADE')
+        ForeignKey('employee_type.id', ondelete='CASCADE'),
+        nullable=True
     )
-    workplace = Column(Integer, ForeignKey('workplace.id', ondelete='CASCADE'))
+    workplace = Column(
+        Integer,
+        ForeignKey('workplace.id', ondelete='CASCADE'),
+        nullable=True
+    )
     created_at = Column(TIMESTAMP, server_default='now()')
     updated_at = Column(TIMESTAMP, server_default='now()')
 

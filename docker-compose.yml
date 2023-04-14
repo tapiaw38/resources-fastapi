@@ -1,6 +1,43 @@
 version: "3.8"
 
 services:
+  db:
+    container_name: postgresql_db
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - 5050:80
+    depends_on:
+      - db
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  celery_worker:
+    container_name: celery_worker
+    build: .
+    command: celery -A celery worker --loglevel=INFO --pidfile=''
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+    depends_on:
+      - rabbitmq
   app:
     container_name: app
     build: .
@@ -10,15 +47,5 @@ services:
     ports:
       - 8000:8000
     restart: always
-  celery:
-    container_name: celery
-    image: celery:alpine
-    build: .
-    command: celery -A app.worker worker --loglevel=INFO
-    volumes:
-      - .:/app
-  flower:
-    container_name: flower
-    image: mher/flower
-    ports:
-      - 5555:5555
+    depends_on:
+      - db
